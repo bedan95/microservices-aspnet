@@ -9,7 +9,12 @@ namespace Play.Catalog.Service.Controllers;
 [Route("items")]
 public class ItemsController : ControllerBase
 {
-    private readonly ItemsRepository _itemsRepository = new();
+    private readonly IItemsRepository _itemsRepository;
+
+    public ItemsController(IItemsRepository itemsRepository)
+    {
+        _itemsRepository = itemsRepository;
+    }
 
     [HttpGet]
     public async Task<IEnumerable<ItemDto>> GetAsync()
@@ -62,7 +67,7 @@ public class ItemsController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("id")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAsync(Guid id)
     {
         var item = await _itemsRepository.GetAsync(id);
