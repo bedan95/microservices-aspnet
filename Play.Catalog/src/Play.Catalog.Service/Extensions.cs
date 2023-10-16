@@ -1,5 +1,5 @@
 ﻿using Play.Catalog.Service.Dtos;
-using Play.Catalog.Service.Entities;
+using Play.Common;
 
 namespace Play.Catalog.Service;
 
