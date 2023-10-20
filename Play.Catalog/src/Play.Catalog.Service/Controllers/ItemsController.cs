@@ -9,6 +9,7 @@ namespace Play.Catalog.Service.Controllers;
 public class ItemsController : ControllerBase
 {
     private readonly IRepository<Item> _itemsRepository;
+    private static int _requestCounter = 0;
 
     public ItemsController(IRepository<Item> itemsRepository)
     {
@@ -16,10 +17,28 @@ public class ItemsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IEnumerable<ItemDto>> GetAsync()
+    public async Task<ActionResult<IEnumerable<ItemDto>>> GetAsync()
     {
-        var items = (await _itemsRepository.GetAllAsync()).Select(item => item.AsDto());
-        return items;
+        _requestCounter++;
+        Console.WriteLine($"Request {_requestCounter}: Starting...");
+
+        if(_requestCounter <= 2)
+        {
+            Console.WriteLine($"Request {_requestCounter}: Delaying...");
+            await Task.Delay(TimeSpan.FromSeconds(10));
+        }
+
+        if(_requestCounter <= 4)
+        {
+            Console.WriteLine($"Request {_requestCounter}: 500 (Internal Server Error).");
+            return StatusCode(500);
+        }
+
+        var items = (await _itemsRepository.GetAllAsync())
+            .Select(item => item.AsDto());
+
+        Console.WriteLine($"Request {_requestCounter}: 200 (OK).");
+        return Ok(items);
     }
 
     [HttpGet("{id}")]
@@ -28,7 +47,9 @@ public class ItemsController : ControllerBase
         var item = await _itemsRepository.GetAsync(id);
 
         if (item == null)
+        {
             return NotFound();
+        }
 
         return item.AsDto();
     }
@@ -55,7 +76,9 @@ public class ItemsController : ControllerBase
         var existingItem = await _itemsRepository.GetAsync(id);
 
         if(existingItem == null)
+        {
             return NotFound();
+        }
 
         existingItem.Name = updateItemDto.Name;
         existingItem.Description = updateItemDto.Description;
@@ -72,7 +95,9 @@ public class ItemsController : ControllerBase
         var item = await _itemsRepository.GetAsync(id);
 
         if (item == null)
+        {
             return NotFound();
+        }
 
         await _itemsRepository.RemoveAsync(item.Id);
 
